@@ -1,0 +1,22 @@
+---
+# ------------------------------------------------------------------------------
+# Playbook for implementing the configuration for the
+#   "Cert Prep: Red Hat Certified System Engineer (EX300)" course
+# ------------------------------------------------------------------------------
+
+- hosts:                all
+
+  tasks:
+  - name:               "Install the 'Development tools' package group"
+    yum:
+      name:             "@Development tools"
+      state:            present
+    become:             yes
+    become_user:        root
+    register:           install_dev_tools
+
+  - name:               "Display any output from installation of development tools"
+    debug:
+      var:              install_dev_tools.stdout_lines
+    when:               install_dev_tools.stdout_lines is defined
+...
