@@ -7,16 +7,53 @@
 - hosts:                all
 
   tasks:
+
+# ------------------------------------------------------------------------------
+# Chapter 1: Virtual Systems Configuration
+# ------------------------------------------------------------------------------
+
   - name:               "Install the 'Development tools' package group"
-    yum:
+    dnf:
       name:             "@Development tools"
       state:            present
     become:             yes
     become_user:        root
     register:           install_dev_tools
 
-  - name:               "Display any output from installation of development tools"
-    debug:
-      var:              install_dev_tools.stdout_lines
-    when:               install_dev_tools.stdout_lines is defined
+# ------------------------------------------------------------------------------
+# Chapter 2: System Configuration
+# ------------------------------------------------------------------------------
+
+  - name:               "Install sysstat"
+    dnf:
+      name:             sysstat
+      state:            present
+    become:             yes
+    become_user:        root
+    register:           install_sysstat
+
+  - name:               "Ensure sysstat is enabled and started"
+    systemd:
+      name:             sysstat
+      enabled:          yes
+      state:            started
+    become:             yes
+    become_user:        root
+
+  - name:               "Copy sample user logging script"
+    copy:
+      dest:             /root/bin/
+      src:              userlog.sh
+    become:             yes
+    become_user:        root
+
+  - name:               "Run sample user logging script every ten (10) mins"
+    cron:
+      name:             "Sample user logging"
+      minute:           "*/10"
+      job:              "/root/bin/userlog.sh"
+      state:            present
+    become:             yes
+    become_user:        root
+
 ...
