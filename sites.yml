@@ -18,42 +18,160 @@
       state:            present
     become:             yes
     become_user:        root
-    register:           install_dev_tools
+    tags:               chapter_1
 
 # ------------------------------------------------------------------------------
 # Chapter 2: System Configuration
 # ------------------------------------------------------------------------------
 
-  - name:               "Install sysstat"
-    dnf:
-      name:             sysstat
-      state:            present
+  - name:               "Chapter 2: System Configuration"
+    block:
+
+    - name:             "Install sysstat"
+      dnf:
+        name:           sysstat
+        state:          present
+
+    - name:             "Ensure sysstat is enabled and started"
+      systemd:
+        name:           sysstat
+        enabled:        yes
+        state:          started
+
+    - name:             "Copy sample user logging script"
+      copy:
+        dest:           /root/bin/
+        src:            userlog.sh
+
+    - name:             "Run sample user logging script every ten (10) mins"
+      cron:
+        name:           "Sample user logging"
+        minute:         "*/10"
+        job:            "/root/bin/userlog.sh"
+        state:          present
+
     become:             yes
     become_user:        root
-    register:           install_sysstat
+    tags:               chapter_2
 
-  - name:               "Ensure sysstat is enabled and started"
+# ------------------------------------------------------------------------------
+# Chapter 3: ISCSI Target Configuration
+# ------------------------------------------------------------------------------
+
+  - name:               "Chapter 3: ISCSI Target Configuration"
+    block:
+
+    - name:             "Install targetcli on iSCSI target"
+      dnf:
+        name:           targetcli
+        state:          present
+      when:             iscsi_role == "target"
+
+    - name:             "Ensure iSCSI target is enabled and started"
+      systemd:
+        name:           target
+        enabled:        yes
+        state:          started
+      when:             iscsi_role == "target"
+
+    - name:             "Install iscsi-initiator-utils on iSCSI client"
+      dnf:
+        name:           iscsi-initiator-utils
+        state:          present
+      when:             iscsi_role == "client"
+
+    - name:             "Ensure iSCSI daemon is enabled and started"
+      systemd:
+        name:           iscsid
+        enabled:        yes
+        state:          started
+      when:             iscsi_role == "client"
+
+    - name:             "Ensure iSCSI service is enabled and started"
+      systemd:
+        name:           iscsi
+        enabled:        yes
+        state:          started
+      when:             iscsi_role == "client"
+
+    - name:             "Create iSCSI target"
+      script:
+        cmd:            create_iscsi_lun.sh
+      register:         create_iscsi_lun
+      changed_when:
+        -               create_iscsi_lun.stdout is defined
+        -               '"Added " in create_iscsi_lun.stdout'
+      when:             iscsi_role == "target"
+
+    - name:             "Display output from create iSCSI target"
+      debug:
+        var:            create_iscsi_lun.stdout_lines
+      when:             create_iscsi_lun.stdout_lines is defined
+
+    - name:             "Configure firewalld"
+      firewalld:
+        immediate:      yes
+        permanent:      yes
+        service:        iscsi-target
+        state:          enabled
+      when:             iscsi_role == "target"
+
+    - name:             "Set initiator name for client"
+      lineinfile:
+        path:           /etc/iscsi/initiatorname.iscsi
+        regexp:         "^InitiatorName="
+        line:           "InitiatorName=iqn.2021-05.au.id.yaocm:client1"
+        state:          present
+      when:             iscsi_role == "client"
+      notify:           "Restart iSCSI initiator"
+
+    - name:             "Turn on CHAP Authentication"
+      lineinfile:
+        path:           /etc/iscsi/iscsid.conf
+        line:           "{{ item }}"
+        state:          present
+      when:             iscsi_role == "client"
+      notify:           "Restart iSCSI initiator"
+      loop:
+        -               "node.session.auth.authmethod = CHAP"
+        -               "node.session.auth.username = user1"
+        -               "node.session.auth.password = password"
+
+    - name:             "Install gdisk on iSCSI client"
+      dnf:
+        name:           gdisk
+        state:          present
+      when:             iscsi_role == "client"
+
+    - name:            "Format iSCSI LUN"
+      script:
+        cmd:            format_file1_iscsi_lun.sh
+      register:         format_file1_iscsi_lun
+      changed_when:
+        -               format_file1_iscsi_lun.stdout is defined
+        -               '"Added " in format_file1_iscsi_lun.stdout'
+      when:             iscsi_role == "client"
+
+    - name:             "Display output from format iSCSI LUN"
+      debug:
+        var:            format_file1_iscsi_lun.stdout_lines
+      when:             format_file1_iscsi_lun.stdout_lines is defined
+
+    become:             yes
+    become_user:        root
+    tags:               chapter_3
+
+# ------------------------------------------------------------------------------
+# Handlers
+# ------------------------------------------------------------------------------
+
+  handlers:
+  
+  - name:               "Restart iSCSI initiator"
     systemd:
-      name:             sysstat
-      enabled:          yes
-      state:            started
-    become:             yes
-    become_user:        root
-
-  - name:               "Copy sample user logging script"
-    copy:
-      dest:             /root/bin/
-      src:              userlog.sh
-    become:             yes
-    become_user:        root
-
-  - name:               "Run sample user logging script every ten (10) mins"
-    cron:
-      name:             "Sample user logging"
-      minute:           "*/10"
-      job:              "/root/bin/userlog.sh"
-      state:            present
-    become:             yes
-    become_user:        root
-
+      name:             "{{ item }}"
+      state:            restarted
+    loop:
+      -                 iscsi
+      -                 iscsid
 ...
