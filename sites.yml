@@ -162,6 +162,185 @@
     tags:               chapter_3
 
 # ------------------------------------------------------------------------------
+# Chapter 4: NTP Services
+# ------------------------------------------------------------------------------
+
+  - name:               "Chapter 4: NTP Services"
+    block:
+    
+    - name:             "Install Chrony"
+      dnf:
+        name:           chrony
+        state:          present
+
+    - name:             "Enable and start Chronyd"
+      systemd:
+        name:           chronyd
+        state:          started
+        enabled:        yes
+
+    - name:             "Allow NTP queries from local server"
+      lineinfile:
+        path:           /etc/chrony.conf
+        regexp:         "^allow"
+        line:           "allow 192.168.1.0/24"
+        state:          present
+      notify:           "Restart chronyd"
+      when:             ntp_role == "server"
+
+    - name:             "Direct NTP queries to local server"
+      lineinfile:
+        path:           /etc/chrony.conf
+        regexp:         "{{ item.regexp }}"
+        line:           "{{ item.line }}"
+        state:          present
+      notify:           "Restart chronyd"
+      loop:
+        - { regexp: "^pool", line: "#pool" }
+        - { regexp: "^server", line: "server 192.168.1.119 iburst" }
+      when:             ntp_role == "client"
+
+    - name:             "Allow NTP through Firewall"
+      firewalld:
+        immediate:      yes
+        permanent:      yes
+        service:        ntp
+        state:          enabled
+        zone:           public
+      when:             ntp_role == "server"
+
+    - name:             "Force all notified handlers"
+      meta:             flush_handlers
+
+    - name:             "Enable ntp queries"
+      command:
+        cmd:            "timedatectl set-ntp true"
+      when:             ntp_role == "client"
+
+    - name:             "Display ntp client status"
+      command:
+        cmd:            "chronyc sources -v"
+      register:         disp_ntp_clt_status
+      when:             ntp_role == "client"
+
+    - name:             "Display ntp client status output"
+      debug:
+        var:            disp_ntp_clt_status.stdout_lines
+      when:             disp_ntp_clt_status.stdout_lines is defined
+
+    become:             yes
+    become_user:        root
+    tags:               chapter_4
+
+# ------------------------------------------------------------------------------
+# Chapter 5: Authentication Services
+# ------------------------------------------------------------------------------
+
+  - name:               "Chapter 5: Authentication Services"
+    block:
+
+
+    become:             yes
+    become_user:        root
+    tags:               chapter_5
+
+# ------------------------------------------------------------------------------
+# Chapter 6: Network Services
+# ------------------------------------------------------------------------------
+
+  - name:               "Chapter 6: Network Services"
+    block:
+
+
+    become:             yes
+    become_user:        root
+    tags:               chapter_6
+
+# ------------------------------------------------------------------------------
+# Chapter 7: Database Services
+# ------------------------------------------------------------------------------
+
+  - name:               "Chapter 7: Database Services"
+    block:
+
+
+    become:             yes
+    become_user:        root
+    tags:               chapter_7
+
+# ------------------------------------------------------------------------------
+# Chapter 8: DNS Services
+# ------------------------------------------------------------------------------
+
+  - name:               "Chapter 8: DNS Services"
+    block:
+
+
+    become:             yes
+    become_user:        root
+    tags:               chapter_8
+
+# ------------------------------------------------------------------------------
+# Chapter 9: Web Services
+# ------------------------------------------------------------------------------
+
+  - name:               "Chapter 9: Web Services"
+    block:
+
+
+    become:             yes
+    become_user:        root
+    tags:               chapter_9
+
+# ------------------------------------------------------------------------------
+# Chapter 10: NFS Services
+# ------------------------------------------------------------------------------
+
+  - name:               "Chapter 10: NFS Services"
+    block:
+
+
+    become:             yes
+    become_user:        root
+    tags:               chapter_10
+
+# ------------------------------------------------------------------------------
+# Chapter 11: SMB Services
+# ------------------------------------------------------------------------------
+
+  - name:               "Chapter 11: SMB Services"
+    block:
+
+
+    become:             yes
+    become_user:        root
+    tags:               chapter_11
+
+# ------------------------------------------------------------------------------
+# Chapter 12: SMTP Services
+# ------------------------------------------------------------------------------
+
+  - name:               "Chapter 12: SMTP Services"
+    block:
+
+
+    become:             yes
+    become_user:        root
+    tags:               chapter_12
+
+# ------------------------------------------------------------------------------
+# Chapter 13: SSH Services
+# ------------------------------------------------------------------------------
+
+  - name:               "Chapter 13: SSH Services"
+    block:
+
+
+    become:             yes
+    become_user:        root
+    tags:               chapter_13
+
+# ------------------------------------------------------------------------------
 # Handlers
 # ------------------------------------------------------------------------------
 
@@ -174,4 +353,13 @@
     loop:
       -                 iscsi
       -                 iscsid
+    become:             yes
+    become_user:        root
+  
+  - name:               "Restart chronyd"
+    systemd:
+      name:             chronyd
+      state:            restarted
+    become:             yes
+    become_user:        root
 ...

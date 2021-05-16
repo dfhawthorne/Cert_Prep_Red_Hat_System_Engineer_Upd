@@ -1,3 +1,10 @@
-airds.yaocm.id.au iscsi_role=target
-banksia.yaocm.id.au iscsi_role=client
-
+---
+all:
+  hosts:
+    airds.yaocm.id.au:
+      iscsi_role:       target
+      ntp_role:         server
+    banksia.yaocm.id.au:
+      iscsi_role:       client
+      ntp_role:         client
+...
