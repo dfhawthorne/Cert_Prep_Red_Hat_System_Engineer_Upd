@@ -239,6 +239,9 @@
   - name:               "Chapter 5: Authentication Services"
     block:
 
+    - name:             "Chapter 5: Authentication Services Placeholder"
+      debug:
+        msg:            "Chapter 5: Authentication Services"
 
     become:             yes
     become_user:        root
@@ -251,6 +254,9 @@
   - name:               "Chapter 6: Network Services"
     block:
 
+    - name:             "Chapter 6: Network Services Placeholder"
+      debug:
+        msg:            "Chapter 6: Network Services"
 
     become:             yes
     become_user:        root
@@ -263,6 +269,9 @@
   - name:               "Chapter 7: Database Services"
     block:
 
+    - name:             "Chapter 7: Database Services Placeholder"
+      debug:
+        msg:            "Chapter 7: Database Services"
 
     become:             yes
     become_user:        root
@@ -275,6 +284,9 @@
   - name:               "Chapter 8: DNS Services"
     block:
 
+    - name:             "Chapter 8: DNS Services Placeholder"
+      debug:
+        msg:            "Chapter 8: DNS Services"
 
     become:             yes
     become_user:        root
@@ -287,6 +299,9 @@
   - name:               "Chapter 9: Web Services"
     block:
 
+    - name:             "Chapter 9: Web Services Placeholder"
+      debug:
+        msg:            "Chapter 9: Web Services"
 
     become:             yes
     become_user:        root
@@ -299,6 +314,9 @@
   - name:               "Chapter 10: NFS Services"
     block:
 
+    - name:             "Chapter 10: NFS Services Placeholder"
+      debug:
+        msg:            "Chapter 10: NFS Services"
 
     become:             yes
     become_user:        root
@@ -311,6 +329,9 @@
   - name:               "Chapter 11: SMB Services"
     block:
 
+    - name:             "Chapter 11: SMB Services Placeholder"
+      debug:
+        msg:            "Chapter 11: SMB Services"
 
     become:             yes
     become_user:        root
@@ -323,6 +344,9 @@
   - name:               "Chapter 12: SMTP Services"
     block:
 
+    - name:             "Chapter 12: SMTP Services Placeholder"
+      debug:
+        msg:            "Chapter 12: SMTP Services"
 
     become:             yes
     become_user:        root
@@ -335,6 +359,9 @@
   - name:               "Chapter 13: SSH Services"
     block:
 
+    - name:             "Chapter 13: SSH Services Placeholder"
+      debug:
+        msg:            "Chapter 13: SSH Services"
 
     become:             yes
     become_user:        root
